@@ -1,0 +1,8 @@
+<h1 align = 'center' >
+  <a href = "{% url 'learning_logs_app:index' %}">Learning Logs App</a> - 
+  <a href = "{% url 'learning_logs_app:topics' %}">Topics</a>
+</h1>
+
+{% block content %} {% endblock content %}
+
+<p align = 'center' >-----Post template------</p>

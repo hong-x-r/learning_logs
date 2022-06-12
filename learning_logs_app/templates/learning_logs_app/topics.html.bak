@@ -1,0 +1,20 @@
+{% extends 'learning_logs_app/base.html' %}
+
+{% block content %}
+
+  <h3 align = 'center'>Topics</h3>
+  <ul>
+    {% for topic in topics %}
+      <li>
+        <a href = "{% url 'll:topic' topic.id %}">{{ topic }}</a>
+      </li>
+    {% empty %}
+      <li>No topics have been created yet.</li>
+    {% endfor %}
+  </ul>
+
+
+{% endblock content %}
+
+<p>After the block</p>
+
