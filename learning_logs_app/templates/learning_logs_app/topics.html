@@ -1,19 +1,27 @@
 {% extends 'learning_logs_app/base.html' %}
 
-{% block content %}
+{% block page_header %}
+  <h1>Topics</h1>
+{% endblock page_header %}
 
-  <h3 align = 'center'>Topics</h3>
+{% block content %}
   <ul>
     {% for topic in topics %}
       <li>
-        <a href = "{% url 'learning_logs_app:topic' topic.id %}">{{ topic }}</a>
+        <h5>
+          <a href = "{% url 'learning_logs_app:topic' topic.id %}">{{ topic }}</a>
+	</h5>
       </li>
     {% empty %}
-      <li>No topics have been created yet.</li>
+      <li>
+        <h5>No topics have been created yet.</h5>
+      </li>
     {% endfor %}
   </ul>
 
-  <p><a href = "{% url 'learning_logs_app:new_topic' %}">Add a topic</a></p>
+  <h5>
+    <a href = "{% url 'learning_logs_app:new_topic' %}">Add a topic</a>
+  </h5>
   <p>----<a href = "{% url 'learning_logs_app:new_entry_any' %}">Add en entry (of any topic)</a></p>
 {% endblock content %}
 

@@ -2,12 +2,16 @@ from django.shortcuts import render, redirect
 from .models import Topic, Entry
 from .forms import TopicForm, EntryForm, EntryAnyForm
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
 # Create your views here.
 
 #def index( request ):
 #    """The homepage for learning_logs_app"""
 #    return render( request, 'learning_logs_app/index.html' )
+
+def not_owner( request, obj ):
+    return obj.owner != request.user
 
 def index( request ):
     return render ( request, 'learning_logs_app/index.html' )
@@ -16,7 +20,8 @@ def index( request ):
 def topics( request ):
     """List all the topics so far"""
     #topics = Topic.objects.order_by( 'date_added' )
-    topics = Topic.objects.all().order_by( '-date_added' )
+    #topics = Topic.objects.all().order_by( '-date_added' )
+    topics = Topic.objects.all().filter( owner = request.user ).order_by( '-date_added' )
     context = { 'topics' : topics }
     return render( request, 'learning_logs_app/topics.html', context )
 
@@ -24,6 +29,8 @@ def topics( request ):
 def topic( request, topic_id ):
     """List of all entries under topic with the ID"""
     topic = Topic.objects.get( id = topic_id )
+    if not_owner( request, topic ):
+        raise Http404
     entries = topic.entry_set.order_by( '-date_added' )
     context = { 'topic' : topic, 'entries' : entries }
     return render( request, 'learning_logs_app/topic.html', context )
@@ -36,7 +43,9 @@ def new_topic( request ):
     else: #data submitted - to process data
         form = TopicForm( data = request.POST )
         if form.is_valid():
-            form.save()
+            new_topic = form.save( commit = False )
+            new_topic.owner = request.user
+            new_topic.save()
             return redirect( 'learning_logs_app:topics' )
 
     context = { 'form' : form }
@@ -46,6 +55,8 @@ def new_topic( request ):
 def new_entry( request, topic_id ):
     """Let user add an entry of specific topic"""
     topic = Topic.objects.get( id = topic_id )
+    if not_owner( request, topic ):
+        raise Http404
 
     if request.method != 'POST': #No data to submit -> a blank form
         form = EntryForm()
@@ -54,6 +65,7 @@ def new_entry( request, topic_id ):
         if form.is_valid():
             new_entry = form.save( commit = False )
             new_entry.topic = topic
+            new_entry.owner = request.user
             new_entry.save()
             return redirect( 'learning_logs_app:topic', topic_id = topic_id )
 
@@ -69,7 +81,9 @@ def new_entry_any( request ):
         form = EntryAnyForm( data = request.POST )
         if form.is_valid():
 #            topic = form.get_topic()
-            form.save()
+            new_entry = form.save( commit = False)
+            new_entry.owner = request.user
+            new_entry.save()
             return redirect( 'learning_logs_app:topics' )#, topic_id = topic )
 
     context = { 'form' : form }
@@ -80,6 +94,9 @@ def edit_entry( request, entry_id ):
     """Let user edit an entry"""
     entry = Entry.objects.get( id = entry_id )
     topic = entry.topic
+
+    if not_owner( request, topic ):
+        raise Http404
 
     if request.method != 'POST': #initial request filling the form
 #        form = EntryForm( instance = entry )
